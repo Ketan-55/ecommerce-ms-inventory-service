@@ -1,0 +1,48 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: inventory-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/inventory_db
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    consumer:
+      group-id: inventory-group
+      auto-offset-reset: earliest
+
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+      # 🔥 Wrap JsonDeserializer safely
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+
+      properties:
+
+        # 🔥 Actual JSON deserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+
+        # Trust package
+        spring.json.trusted.packages: "*"
+
+        # 🔥 Ignore producer package/class metadata
+        spring.json.use.type.headers: false
+
+        # 🔥 Convert JSON into THIS DTO
+        spring.json.value.default.type: com.ecommerce.inventory_service.dto.OrderEvent
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
